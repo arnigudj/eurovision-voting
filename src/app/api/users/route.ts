@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file") as File;
   const nickname = form.get("nickname")?.toString().trim();
-
+  console.log('supabase url:', process.env.SUPABASE_URL);
   if (!file || !nickname) {
     return NextResponse.json(
       { error: "Missing nickname or image" },
