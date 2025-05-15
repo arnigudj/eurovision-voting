@@ -1,10 +1,9 @@
-
+import Contests from "@/components/Contest/Manage";
 
 export default function Admin() {
   return (
     <div>
-      <h1>Admin</h1>
-      <p>Welcome to the admin page!</p>
+      <Contests />
     </div>
   );
 }
