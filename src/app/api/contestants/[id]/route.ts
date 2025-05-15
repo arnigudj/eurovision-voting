@@ -1,11 +1,13 @@
 import { supabase } from "@/lib/supabase";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { Contestant } from "../types";
+import { ApiError } from "../../types";
 
 export async function PATCH(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
-  const id = context.params.id;
+  req: Request,
+  { params }: { params: { id: string } }
+) : Promise<NextResponse<Contestant | ApiError>>{
+  const id = params.id;
   const body = await req.json();
   const { performer, song, is_final, image_url } = body;
 
