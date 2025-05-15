@@ -1,10 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
+import { User } from '../types';
+import { ApiError } from '../../types';
 
 export async function GET(
   _req: Request,
   { params }: { params: { nickname: string } }
-) {
+): Promise<NextResponse<User | ApiError>> {
   const nickname = params.nickname;
 
   if (!nickname) {

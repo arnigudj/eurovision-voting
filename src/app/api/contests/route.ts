@@ -1,16 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { NextResponse } from "next/server";
-
-interface Contest {
-  id: string;
-  description?: string | null;
-  active: boolean;
-  created_at: string;
-}
-
-interface ApiError {
-  error: string;
-}
+import { Contest } from "./types";
+import { ApiError } from "@/app/api/types";
 
 export async function GET(): Promise<NextResponse<Contest[] | ApiError>> {
   const { data, error } = await supabase

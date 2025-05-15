@@ -1,13 +1,22 @@
-'use client';
+"use client";
 
-import { useEffect, useState, use } from 'react';
+import { Contestant } from "@/app/api/contestants/types";
+import { Contest } from "@/app/api/contests/types";
+import { Rank } from "@/app/api/rank/types";
+import { finalContestants, sortContestants } from "@/lib/contestants";
+import { assignRank } from "@/lib/rank";
+import { useEffect, useState, use } from "react";
 
-const MEMBER_COUNTRIES = ['FR', 'DE', 'IT', 'ES', 'GB'];
-
-export default function AdminTop10Page({ params }: { params: Promise<{ id: string }> }) {
+export default function AdminTop10Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id: contestId } = use(params);
-  const [contestants, setContestants] = useState<{ id: string; country: string }[]>([]);
-  const [host, setHost] = useState<string | null>(null);
+  const [contestants, setContestants] = useState<
+    { id: string; country: string }[]
+  >([]);
+  const [contest, setContest] = useState<Contest>();
   const [top10, setTop10] = useState<(string | null)[]>(Array(10).fill(null));
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -16,31 +25,22 @@ export default function AdminTop10Page({ params }: { params: Promise<{ id: strin
       const [contestantsRes, contestRes, rankRes] = await Promise.all([
         fetch(`/api/contestants?contest_id=${contestId}`),
         fetch(`/api/contests/${contestId}`),
-        fetch(`/api/rank?contest_id=${contestId}`)
+        fetch(`/api/rank?contest_id=${contestId}`),
       ]);
 
-      const contestantsData = await contestantsRes.json();
-      const contestData = await contestRes.json();
-      const rankData = await rankRes.json();
+      const contestantsData = (await contestantsRes.json()) as Contestant[];
+      const contestData = (await contestRes.json()) as Contest;
+      const rankData = (await rankRes.json()) as Rank;
 
-      const known = new Set(contestantsData.map((c: any) => c.country));
-      const required = [...MEMBER_COUNTRIES];
-      if (contestData.host) {
-        required.push(contestData.host);
-      }
-
-      for (const code of required) {
-        if (!known.has(code)) {
-          contestantsData.push({ id: `__${code}`, country: code });
-        }
-      }
-
-      contestantsData.sort((a: any, b: any) => a.country.localeCompare(b.country));
-      setHost(contestData.host);
-      setContestants(contestantsData);
+      setContest(contestData);
+      setContestants(
+        sortContestants(finalContestants(contestantsData, contestData))
+      );
 
       if (Array.isArray(rankData?.ranking)) {
-        const filled = Array(10).fill(null).map((_, i) => rankData.ranking[i] || null);
+        const filled = Array(10)
+          .fill(null)
+          .map((_, i) => rankData.ranking[i] || null);
         setTop10(filled);
       }
     };
@@ -49,35 +49,18 @@ export default function AdminTop10Page({ params }: { params: Promise<{ id: strin
 
   const setRank = (targetIndex: number) => {
     if (!selected) return;
-
-    setTop10(prev => {
-      const oldIndex = prev.findIndex(id => id === selected);
-      const updated = [...prev];
-      if (oldIndex !== -1) updated[oldIndex] = null;
-
-      const shiftDown = (arr: (string | null)[], start: number): (string | null)[] => {
-        const out = [...arr];
-        let moving = selected;
-        for (let i = start; i < 10; i++) {
-          const current = out[i];
-          out[i] = moving;
-          moving = current;
-          if (!moving) break;
-        }
-        return out;
-      };
-
-      return shiftDown(updated, targetIndex);
-    });
-
+    setTop10((prev) => assignRank(prev, selected, targetIndex));
     setSelected(null);
   };
 
-  const top10Contestants = top10.map(id => contestants.find(c => c.id === id));
-  const remaining = contestants.filter(c => !top10.includes(c.id));
+  const top10Contestants = top10.map((id) =>
+    contestants.find((c) => c.id === id)
+  );
+  const remaining = contestants.filter((c) => !top10.includes(c.id));
 
   return (
     <div style={{ padding: 24 }}>
+      <h1>{contest?.id}</h1>
       <h1>Top 10 — Contest {contestId}</h1>
 
       <ol>
@@ -87,11 +70,11 @@ export default function AdminTop10Page({ params }: { params: Promise<{ id: strin
             onClick={() => c && setSelected(c.id)}
             style={{
               marginBottom: 4,
-              cursor: c ? 'pointer' : 'default',
-              background: selected === c?.id ? '#eef' : 'transparent'
+              cursor: c ? "pointer" : "default",
+              background: selected === c?.id ? "#eef" : "transparent",
             }}
           >
-            {c ? c.country : <span style={{ color: '#888' }}>—</span>}
+            {c ? c.country : <span style={{ color: "#888" }}>—</span>}
           </li>
         ))}
       </ol>
@@ -111,13 +94,13 @@ export default function AdminTop10Page({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
-      <hr style={{ margin: '24px 0' }} />
+      <hr style={{ margin: "24px 0" }} />
 
       <ul>
-        {remaining.map(c => (
+        {remaining.map((c) => (
           <li
             key={c.id}
-            style={{ cursor: 'pointer', marginBottom: 4 }}
+            style={{ cursor: "pointer", marginBottom: 4 }}
             onClick={() => setSelected(c.id)}
           >
             {c.country}
@@ -128,17 +111,17 @@ export default function AdminTop10Page({ params }: { params: Promise<{ id: strin
       <button
         onClick={async () => {
           const res = await fetch(`/api/rank`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               contest_id: contestId,
               ranking: top10.filter(Boolean),
-            })
+            }),
           });
 
           const data = await res.json();
-          if (!res.ok) alert(data.error || 'Error saving');
-          else alert('Top 10 saved');
+          if (!res.ok) alert(data.error || "Error saving");
+          else alert("Top 10 saved");
         }}
         style={{ marginTop: 24 }}
       >

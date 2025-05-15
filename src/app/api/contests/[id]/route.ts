@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import { NextResponse } from "next/server";
+import { Contest } from "../types";
+import { ApiError } from "../../types";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: { id: string } }): Promise<NextResponse<Contest | ApiError>> {
   const { id } = params;
 
   const { data, error } = await supabase
@@ -20,7 +22,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 export async function PATCH(
   req: Request,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse<Contest | ApiError>> {
   const { id } = params;
   const body = await req.json();
 
@@ -29,7 +31,7 @@ export async function PATCH(
   }
 
   const allowedFields = ["host", "description", "banner_url"];
-  const updateData: Record<string, any> = {};
+  const updateData: Record<string, string> = {};
 
   for (const key of allowedFields) {
     if (body[key] !== undefined) updateData[key] = body[key];

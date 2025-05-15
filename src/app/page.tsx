@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function HomePage() {
   const [nickname, setNickname] = useState("");
@@ -73,7 +74,7 @@ export default function HomePage() {
           }}
         />
         {preview && (
-          <img
+          <Image
             src={preview}
             alt="Preview"
             style={{ maxWidth: 200, marginTop: 8 }}

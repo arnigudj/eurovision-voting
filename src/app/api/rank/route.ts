@@ -1,7 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import { NextResponse } from "next/server";
+import { Rank } from "./types";
+import { ApiError } from "../types";
 
-export async function GET(req: Request) {
+export async function GET(
+  req: Request
+): Promise<NextResponse<Rank | ApiError>> {
   const { searchParams } = new URL(req.url);
   const contest_id = searchParams.get("contest_id");
 
@@ -19,7 +23,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  if (!data) {
+    return NextResponse.json({ error: "No ranking found" }, { status: 404 });
+  }
+
+  return NextResponse.json(data as Rank);
 }
 
 export async function POST(req: Request) {
@@ -29,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("rank")
     .upsert({ contest_id, ranking, updated_at: new Date().toISOString() });
 

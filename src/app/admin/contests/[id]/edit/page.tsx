@@ -1,12 +1,8 @@
 'use client';
 
+import { AUTO_FINALISTS, COUNTRIES } from '@/lib/countries';
+import Image from 'next/image';
 import { useEffect, useState, use } from 'react';
-
-const ISO_COUNTRIES = [
-  "AL", "AM", "AU", "AT", "AZ", "BE", "HR", "CY", "CZ", "DK", "EE", "FI",
-  "FR", "GE", "DE", "GR", "IS", "IE", "IL", "IT", "LV", "LT", "LU", "MT",
-  "ME", "NL", "NO", "PL", "PT", "SM", "RS", "SI", "ES", "SE", "CH", "UA", "GB"
-];
 
 type Contest = {
   id: string;
@@ -23,8 +19,6 @@ type Contestant = {
   image_url: string | null;
   is_final: boolean;
 };
-
-const BIG_FIVE = ['FR', 'DE', 'IT', 'ES', 'GB'];
 
 export default function EditContestPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -43,9 +37,9 @@ export default function EditContestPage({ params }: { params: Promise<{ id: stri
       const data: Contestant[] = await contestantsRes.json();
 
       const map: Record<string, Contestant | null> = {};
-      ISO_COUNTRIES.forEach(code => {
-        const found = data.find(c => c.country === code);
-        map[code] = found || null;
+      COUNTRIES.forEach(country => {
+        const found = data.find(c => c.country === country.code);
+        map[country.code] = found || null;
       });
 
       setContest(contest);
@@ -58,22 +52,21 @@ export default function EditContestPage({ params }: { params: Promise<{ id: stri
 
   const upsertContestant = async (country: string, update: Partial<Omit<Contestant, 'id' | 'contest_id' | 'country'>>) => {
     const existing = contestants[country];
-    let method: 'POST' | 'PATCH';
-    let body: Record<string, any>;
-
-    if (existing) {
-      method = 'PATCH';
-      body = { id: existing.id, ...update };
+    let res = undefined
+    
+    if(existing) {
+      res = await fetch(`/api/contestants/${existing.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(update)
+      });
     } else {
-      method = 'POST';
-      body = { contest_id: id, country, ...update };
+      res = await fetch('/api/contestants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contest_id: id, country, ...update })
+      });
     }
-
-    const res = await fetch('/api/contestants', {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
 
     const data = await res.json();
     if (!res.ok) alert(data.error);
@@ -142,8 +135,8 @@ export default function EditContestPage({ params }: { params: Promise<{ id: stri
           }}
         >
           <option value="">Select host</option>
-          {ISO_COUNTRIES.map(code => (
-            <option key={code} value={code}>{code}</option>
+          {COUNTRIES.map(country => (
+            <option key={country.code} value={country.code}>{country.name}</option>
           ))}
         </select>
       </div>
@@ -160,19 +153,19 @@ export default function EditContestPage({ params }: { params: Promise<{ id: stri
             handleBannerUpload(file);
           }}
         />
-        {bannerPreview && <img src={bannerPreview} alt="Preview" style={{ maxWidth: 400, marginTop: 12 }} />}
+        {bannerPreview && <Image width={400} height={200} src={bannerPreview} alt="Preview" style={{ maxWidth: 400, marginTop: 12 }} />}
       </div>
 
       <h2>Contestants</h2>
       <ul style={{ padding: 0 }}>
-        {ISO_COUNTRIES.map(country => {
-          const c = contestants[country];
+        {COUNTRIES.map(country => {
+          const c = contestants[country.code];
           return (
             <li
-              key={country}
+              key={country.code}
               style={{ marginBottom: 16, border: '1px solid #ddd', padding: 12, borderRadius: 6 }}
             >
-              <strong>{country}</strong>
+              <strong>{country.name}</strong>
 
               <div>
                 <input
@@ -180,7 +173,7 @@ export default function EditContestPage({ params }: { params: Promise<{ id: stri
                   defaultValue={c?.performer || ''}
                   onBlur={e => {
                     const value = e.target.value;
-                    if (value && value !== c?.performer) upsertContestant(country, { performer: value });
+                    if (value && value !== c?.performer) upsertContestant(country.code, { performer: value });
                   }}
                 />
                 <input
@@ -188,17 +181,17 @@ export default function EditContestPage({ params }: { params: Promise<{ id: stri
                   defaultValue={c?.song || ''}
                   onBlur={e => {
                     const value = e.target.value;
-                    if (value && value !== c?.song) upsertContestant(country, { song: value });
+                    if (value && value !== c?.song) upsertContestant(country.code, { song: value });
                   }}
                 />
               </div>
 
-              {!BIG_FIVE.includes(country) && contest.host !== country && (
+              {!AUTO_FINALISTS.includes(country.code) && contest.host !== country.code && (
                 <label>
                   <input
                     type="checkbox"
                     checked={c?.is_final || false}
-                    onChange={() => upsertContestant(country, { is_final: !c?.is_final })}
+                    onChange={() => upsertContestant(country.code, { is_final: !c?.is_final })}
                   />
                   In Final
                 </label>
@@ -209,12 +202,12 @@ export default function EditContestPage({ params }: { params: Promise<{ id: stri
                   onDrop={e => {
                     e.preventDefault();
                     const file = e.dataTransfer.files[0];
-                    if (file) handleContestantImageUpload(country, file);
+                    if (file) handleContestantImageUpload(country.code, file);
                   }}
                   onDragOver={e => e.preventDefault()}
                   style={{ marginTop: 8, padding: 12, border: '1px dashed #aaa', background: '#f9f9f9', cursor: 'pointer' }}
                 >
-                  {c.image_url ? <img src={c.image_url} alt="" style={{ maxHeight: 100 }} /> : <span>Drop performer image here</span>}
+                  {c.image_url ? <Image width={400} height={100} src={c.image_url} alt="" style={{ maxHeight: 100 }} /> : <span>Drop performer image here</span>}
                 </div>
               )}
             </li>
