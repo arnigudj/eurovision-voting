@@ -4,14 +4,13 @@ import { Contestant } from "@/app/api/contestants/types";
 import { Contest } from "@/app/api/contests/types";
 import { Rank } from "@/app/api/rank/types";
 import ContestHeader from "@/components/Contest/ContestHeader";
-import ContestantCard from "@/components/Contestant/ContestantCard";
-import RankNumber from "@/components/Rank/RankNumber";
 import { finalContestants, sortContestants } from "@/lib/contestants";
 import { assignRank } from "@/lib/rank";
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
-import styles from "./page.module.scss";
-import Button from "@/components/Button/Button";
+import RankModal from "@/components/Rank/RankModal";
+import ContestantRanking from "@/components/Contestant/ContestantRanking";
+import Checkbox from "@/components/Checkbox/Checkbox";
 
 export default function AdminTop10Page({
   params,
@@ -24,13 +23,25 @@ export default function AdminTop10Page({
   const [top10, setTop10] = useState<(string | null)[]>(Array(10).fill(null));
   const [selected, setSelected] = useState<Contestant>();
 
-  const handleRank = async () => {
+  const handleUpdate = async (c: Contest) => {
+    const res = await fetch(`/api/contests/${contestId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(c),
+    });
+
+    const data = await res.json();
+    if (!res.ok) alert(data.error || "Error saving");
+    else setContest(data);
+  };
+
+  const handleRanking = async (ranking: (string | null)[]) => {
     const res = await fetch(`/api/rank`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contest_id: contestId,
-        ranking: top10.filter(Boolean),
+        ranking: ranking.filter(Boolean),
       }),
     });
 
@@ -72,10 +83,6 @@ export default function AdminTop10Page({
     setSelected(undefined);
   };
 
-  const top10Contestants = top10.map((id) =>
-    contestants.find((c) => c.id === id)
-  );
-  const remaining = contestants.filter((c) => !top10.includes(c.id));
   if (!contest) return <h1>Loading...</h1>;
   return (
     <div style={{ padding: 24 }}>
@@ -84,50 +91,27 @@ export default function AdminTop10Page({
         <Link href={`/admin/contests/${contest.id}/edit`}>Edit</Link>
         <Link href={`/admin/contests/${contest.id}/groups`}>Groups</Link>
       </ContestHeader>
-
-      <div className={styles.contestants}>
-        <h2>My top 10</h2>
-        {top10Contestants.map((c, i) => (
-          <div key={i} onClick={() => c && setSelected(c)}>
-            <ContestantCard contestant={c}>
-              <RankNumber rank={i + 1} />
-            </ContestantCard>
-          </div>
-        ))}
+      <div>
+        <Checkbox 
+          id="lock-voting"
+          label="Lock voting"
+          checked={contest.votes_locked}
+          onChange={(locked) => handleUpdate({ ...contest, votes_locked: locked })}
+        
+        />
       </div>
-      <div className={styles.actions}>
-        <Button onClick={handleRank} style={{ marginTop: 24 }}>
-          Save Ranking
-        </Button>
-      </div>
-      <hr style={{ margin: "24px 0" }} />
-
-      <div className={styles.contestants}>
-        <h2>My losers</h2>
-        {sortContestants(remaining).map((c) => (
-          <div key={c.id} onClick={() => c && setSelected(c)}>
-            <ContestantCard contestant={c}></ContestantCard>
-          </div>
-        ))}
-      </div>
+      <ContestantRanking
+        contestants={contestants}
+        ranking={top10}
+        onRank={handleRanking}
+      />
 
       {selected && (
-        <div className={styles.rankModal}>
-          <div className={styles.rankModalContent}>
-            <ContestantCard contestant={selected}></ContestantCard>
-            <div className={styles.rankModalActions}>
-              {Array.from({ length: 10 }, (_, i) => (
-                <button
-                  className={styles.rankBtn}
-                  key={i}
-                  onClick={() => setRank(i)}
-                >
-                  <RankNumber rank={i + 1} />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <RankModal
+          selected={selected}
+          onRank={setRank}
+          onClose={() => setSelected(undefined)}
+        />
       )}
     </div>
   );

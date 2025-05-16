@@ -22,7 +22,7 @@ export default function ContestantCard({ contestant, children }: Props) {
         )}
       </div>
       <div className={styles.flagContainer}>
-        {contestant?.country && <Flag code={contestant.country} size={42} />}
+        {contestant?.country && <Flag code={contestant.country} size={24} />}
       </div>
       <div className={styles.infoContainer}>
         <h6 className={styles.country}>{contestant?.country && getCountryName(contestant.country)}</h6>

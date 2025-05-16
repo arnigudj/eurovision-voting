@@ -20,7 +20,7 @@ export async function GET(): Promise<NextResponse<Contestant[] | ApiError>> {
   // Fetch contestants for that contest
   const { data: contestants, error: contestantError } = await supabase
     .from("contestants")
-    .select("id, country")
+    .select("*")
     .eq("contest_id", contest.id);
 
   if (contestantError) {

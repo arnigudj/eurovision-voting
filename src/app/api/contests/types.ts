@@ -5,4 +5,5 @@ export interface Contest {
   banner_url?: string;
   active: boolean;
   created_at?: string;
+  votes_locked?: boolean;
 }

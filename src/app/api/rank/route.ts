@@ -7,10 +7,18 @@ export async function GET(
   req: Request
 ): Promise<NextResponse<Rank | ApiError>> {
   const { searchParams } = new URL(req.url);
-  const contest_id = searchParams.get("contest_id");
-
+  let contest_id = searchParams.get("contest_id");
   if (!contest_id) {
-    return NextResponse.json({ error: "Missing contest_id" }, { status: 400 });
+    // get the active contest id
+    const { data: contest, error: contestError } = await supabase
+      .from("contests")
+      .select("id")
+      .eq("active", true)
+      .single();
+    if (contestError || !contest?.id) {
+      return NextResponse.json({ error: "No active contest" }, { status: 404 });
+    }
+    contest_id = contest.id;
   }
 
   const { data, error } = await supabase

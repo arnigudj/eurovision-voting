@@ -3,9 +3,8 @@
 .button {
   all: unset;
   cursor: pointer;
-  padding: 0.5rem 1rem;
-  background-color: $surface-color-dark;
   border-radius: $border-radius-lg;
   color: $gray-dark;
   font-weight: 700;
+  box-sizing: border-box;
 }

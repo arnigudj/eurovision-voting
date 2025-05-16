@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file") as File;
   const nickname = form.get("nickname")?.toString().trim();
-  
+
   if (!file || !nickname) {
     return NextResponse.json(
       { error: "Missing nickname or image" },
@@ -13,22 +13,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const { data: exists } = await supabase
-    .from("users")
-    .select("id")
-    .eq("nickname", nickname)
-    .maybeSingle();
-
-  if (exists) {
-    return NextResponse.json(
-      { error: "Nickname already taken" },
-      { status: 409 }
-    );
-  }
-
-  const path = `${nickname}/${file.name}`;
+  const path = `${nickname}-${Date.now()}/${file.name}`;
   const { url: image_url, error: uploadError } = await uploadToBucket(
-    "users",
+    "userss",
     path,
     file
   );
@@ -37,17 +24,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: uploadError }, { status: 500 });
   }
 
-  if(!image_url) {
-    return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
+  if (!image_url) {
+    return NextResponse.json(
+      { error: "Failed to upload image" },
+      { status: 500 }
+    );
   }
 
-  const { error: insertError } = await supabase
+  const { data, error: insertError } = await supabase
     .from("users")
-    .insert({ nickname, image_url });
+    .insert({ nickname, image_url })
+    .select()
+    .single();
 
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json(data);
 }

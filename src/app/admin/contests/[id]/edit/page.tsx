@@ -103,6 +103,7 @@ export default function EditContestPage({
       <ContestHeader contest={contest}>
         <Link href="/admin">Home</Link>
         <Link href={`/admin/contests/${contest.id}`}>Rank</Link>
+        <Link href={`/admin/contests/${contest.id}/groups`}>Groups</Link>
       </ContestHeader>
       <div className={styles.contestants}>
         <h2>Contestants</h2>

@@ -1,0 +1,25 @@
+@use "@/app/variables" as *;
+
+.container {
+  display: flex;
+  align-items: center;
+  background-color: $surface-color-dark;
+  padding: 8px;
+  padding-right: 16px;
+  border-radius: 100px;
+  gap: 8px;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: "cover";
+  overflow: hidden;
+}
+
+.name {
+  font-size: 1rem;
+  font-weight: 9s00;
+  color: #333;
+}

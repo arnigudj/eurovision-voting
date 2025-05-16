@@ -1,0 +1,10 @@
+@use "@/app/variables" as *;
+
+.container  {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1rem;
+    background-color: $white;
+    border-radius: $border-radius-lg;
+}

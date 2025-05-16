@@ -2,22 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { useUser } from "@/context/UserContext";
+import { Contest } from "./api/contests/types";
+import ContestHeader from "@/components/Contest/ContestHeader";
+import Input from "@/components/Input/Input";
+import DragDropUpload from "@/components/DragDropUpload/DragDropUpload";
+import Button from "@/components/Button/Button";
 
 export default function HomePage() {
+  const { user, setUser } = useUser();
+  const [contest, setContest] = useState<Contest>();
+  const [preview, setPreview] = useState<string>();
   const [nickname, setNickname] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    const saved = localStorage.getItem("nickname");
-    if (saved) {
-      router.push("/voting");
-    }
-  }, [router]);
 
   const handleSubmit = async () => {
     if (!nickname.trim()) {
@@ -47,50 +47,59 @@ export default function HomePage() {
     if (!res.ok) {
       setError(data.error);
     } else {
-      localStorage.setItem("nickname", nickname);
+      setUser(data);
       router.push("/voting");
     }
   };
 
-  return (
-    <div style={{ padding: 24 }}>
-      <h1>Join Eurovision Pool</h1>
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      if(user){
+        router.push(`/users/${user.id}/voting`);
+        return
+      }
+      const [contestRes] = await Promise.all([fetch(`/api/contests/active`)]);
 
-      <input
+      setContest(await contestRes.json());
+
+      setLoading(false);
+
+    };
+
+    load();
+  }, [router, user]);
+
+  return (
+    <div>
+      <ContestHeader contest={contest}></ContestHeader>
+
+      <DragDropUpload
+        label='Upload your selfie'
+        previewUrl={user?.image_url || preview}
+        onFileSelect={(file) => {
+          setImageFile(file);
+          if (file) setPreview(URL.createObjectURL(file));
+        }}
+      />
+      <Input
         type="text"
-        placeholder="Nickname"
+        placeholder="Enter your name"
         value={nickname}
         onChange={(e) => setNickname(e.target.value)}
       />
 
-      <div style={{ marginTop: 16 }}>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            setImageFile(file || null); // ← this line is essential
-            if (file) setPreview(URL.createObjectURL(file));
-          }}
-        />
-        {preview && (
-          <Image
-            src={preview}
-            alt="Preview"
-            style={{ maxWidth: 200, marginTop: 8 }}
-          />
-        )}
-      </div>
+      
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <button
+      <Button
         onClick={handleSubmit}
         disabled={loading}
         style={{ marginTop: 16 }}
       >
-        {loading ? "Submitting..." : "Enter"}
-      </button>
+        {loading ? "Submitting..." : "Join the contest!"}
+      </Button>
     </div>
   );
 }

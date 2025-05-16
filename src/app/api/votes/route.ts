@@ -1,31 +1,39 @@
-import { supabase } from '@/lib/supabase';
-import { NextResponse } from 'next/server';
+import { supabase } from "@/lib/supabase";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { nickname, ranking } = await req.json();
+  const { user_id, ranking } = await req.json();
 
-  if (!nickname || !Array.isArray(ranking)) {
-    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  if (!user_id || !Array.isArray(ranking)) {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
   const { data: contest, error: contestError } = await supabase
-    .from('contests')
-    .select('id')
-    .eq('active', true)
+    .from("contests")
+    .select("id, votes_locked")
+    .eq("active", true)
     .single();
 
   if (contestError || !contest?.id) {
-    return NextResponse.json({ error: 'No active contest' }, { status: 404 });
+    return NextResponse.json({ error: "No active contest" }, { status: 404 });
   }
 
-  const { error } = await supabase
-    .from('votes')
-    .upsert({
+  if (contest.votes_locked) {
+    return NextResponse.json(
+      { error: "Voting is closed for this contest" },
+      { status: 403 }
+    );
+  }
+
+  const { error } = await supabase.from("votes").upsert(
+    {
       contest_id: contest.id,
-      nickname,
+      user_id,
       ranking,
       updated_at: new Date().toISOString(),
-    });
+    },
+    { onConflict: "contest_id,user_id" } // ✅ explicitly handle conflict on this unique key
+  );
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -35,34 +43,33 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-    const { searchParams } = new URL(req.url);
-    const nickname = searchParams.get('nickname');
-  
-    if (!nickname) {
-      return NextResponse.json({ error: 'Missing nickname' }, { status: 400 });
-    }
-  
-    const { data: contest } = await supabase
-      .from('contests')
-      .select('id')
-      .eq('active', true)
-      .single();
-  
-    if (!contest?.id) {
-      return NextResponse.json({ error: 'No active contest' }, { status: 404 });
-    }
-  
-    const { data, error } = await supabase
-      .from('votes')
-      .select('ranking')
-      .eq('contest_id', contest.id)
-      .eq('nickname', nickname)
-      .single();
-  
-    if (error) {
-      return NextResponse.json({ error: error.message, nickname }, { status: 404 });
-    }
-  
-    return NextResponse.json(data);
+  const { searchParams } = new URL(req.url);
+  const user_id = searchParams.get("user_id");
+
+  if (!user_id) {
+    return NextResponse.json({ error: "Missing user_id" }, { status: 400 });
   }
-  
+
+  const { data: contest } = await supabase
+    .from("contests")
+    .select("id")
+    .eq("active", true)
+    .single();
+
+  if (!contest?.id) {
+    return NextResponse.json({ error: "No active contest" }, { status: 404 });
+  }
+
+  const { data, error } = await supabase
+    .from("votes")
+    .select("ranking")
+    .eq("contest_id", contest.id)
+    .eq("user_id", user_id)
+    .single();
+
+  if (error && error.code !== "PGRST116") {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data?.ranking ?? []);
+}

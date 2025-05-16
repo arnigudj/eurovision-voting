@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useCallback, useRef, useState } from "react";
@@ -6,9 +7,14 @@ import styles from "./DragDropUpload.module.scss";
 type Props = {
   onFileSelect: (file: File) => void;
   previewUrl?: string;
+  label?: string;
 };
 
-export default function DragDropUpload({ onFileSelect, previewUrl }: Props) {
+export default function DragDropUpload({
+  onFileSelect,
+  previewUrl,
+  label,
+}: Props) {
   const [dragging, setDragging] = useState(false);
   const [preview, setPreview] = useState(previewUrl);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,11 +62,13 @@ export default function DragDropUpload({ onFileSelect, previewUrl }: Props) {
         onChange={handleFileInput}
         className={styles.hiddenInput}
       />
-      {preview ? (
-        <img src={preview} alt="Preview" className={styles.preview} />
-      ) : (
-        <p>Drop an image here or click to upload</p>
-      )}
+      <div className={styles.previewContainer}>
+        {preview ? (
+          <img src={preview} alt="Preview" className={styles.preview} />
+        ) : (
+          <p>{label || "Drop an image here or click to upload"}</p>
+        )}
+      </div>
     </div>
   );
 }

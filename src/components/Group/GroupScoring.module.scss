@@ -1,0 +1,65 @@
+@use "@/app/variables" as *;
+.closeBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 42px;
+  width: 42px;
+  background: $surface-color;
+  
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(5px);
+  gap: 1rem;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: $surface-color-light;
+  padding: 1rem;
+  border-radius: 12px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  justify-content: space-between;
+
+  color: $white;
+}
+
+.modalActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: $surface-color-light;
+  border-radius: 8px;
+}
+
+.btn {
+  all: unset;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border-radius: 4px;
+}

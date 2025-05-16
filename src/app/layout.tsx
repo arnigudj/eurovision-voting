@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Theme } from "@radix-ui/themes";
 import "./globals.css";
 import "@radix-ui/themes/styles.css";
+import { UserProvider } from "@/context/UserContext";
 
 export const metadata: Metadata = {
   title: "Eurovision voter",
@@ -16,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Theme>{children}</Theme>
+        <Theme>
+          <UserProvider>{children}</UserProvider>
+        </Theme>
       </body>
     </html>
   );
