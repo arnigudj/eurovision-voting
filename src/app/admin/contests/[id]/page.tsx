@@ -3,9 +3,15 @@
 import { Contestant } from "@/app/api/contestants/types";
 import { Contest } from "@/app/api/contests/types";
 import { Rank } from "@/app/api/rank/types";
+import ContestHeader from "@/components/Contest/ContestHeader";
+import ContestantCard from "@/components/Contestant/ContestantCard";
+import RankNumber from "@/components/Rank/RankNumber";
 import { finalContestants, sortContestants } from "@/lib/contestants";
 import { assignRank } from "@/lib/rank";
+import Link from "next/link";
 import { useEffect, useState, use } from "react";
+import styles from "./page.module.scss";
+import Button from "@/components/Button/Button";
 
 export default function AdminTop10Page({
   params,
@@ -13,12 +19,25 @@ export default function AdminTop10Page({
   params: Promise<{ id: string }>;
 }) {
   const { id: contestId } = use(params);
-  const [contestants, setContestants] = useState<
-    { id: string; country: string }[]
-  >([]);
+  const [contestants, setContestants] = useState<Contestant[]>([]);
   const [contest, setContest] = useState<Contest>();
   const [top10, setTop10] = useState<(string | null)[]>(Array(10).fill(null));
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Contestant>();
+
+  const handleRank = async () => {
+    const res = await fetch(`/api/rank`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contest_id: contestId,
+        ranking: top10.filter(Boolean),
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) alert(data.error || "Error saving");
+    else alert("Top 10 saved");
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -50,83 +69,66 @@ export default function AdminTop10Page({
   const setRank = (targetIndex: number) => {
     if (!selected) return;
     setTop10((prev) => assignRank(prev, selected, targetIndex));
-    setSelected(null);
+    setSelected(undefined);
   };
 
   const top10Contestants = top10.map((id) =>
     contestants.find((c) => c.id === id)
   );
   const remaining = contestants.filter((c) => !top10.includes(c.id));
-
+  if (!contest) return <h1>Loading...</h1>;
   return (
     <div style={{ padding: 24 }}>
-      <h1>{contest?.id}</h1>
-      <h1>Top 10 — Contest {contestId}</h1>
+      <ContestHeader contest={contest}>
+        <Link href="/admin">Home</Link>
+        <Link href={`/admin/contests/${contest.id}/edit`}>Edit</Link>
+        <Link href={`/admin/contests/${contest.id}/groups`}>Groups</Link>
+      </ContestHeader>
 
-      <ol>
+      <div className={styles.contestants}>
+        <h2>My top 10</h2>
         {top10Contestants.map((c, i) => (
-          <li
-            key={i}
-            onClick={() => c && setSelected(c.id)}
-            style={{
-              marginBottom: 4,
-              cursor: c ? "pointer" : "default",
-              background: selected === c?.id ? "#eef" : "transparent",
-            }}
-          >
-            {c ? c.country : <span style={{ color: "#888" }}>—</span>}
-          </li>
+          <div key={i} onClick={() => c && setSelected(c)}>
+            <ContestantCard contestant={c}>
+              <RankNumber rank={i + 1} />
+            </ContestantCard>
+          </div>
         ))}
-      </ol>
-
-      {selected && (
-        <div style={{ marginTop: 16, marginBottom: 16 }}>
-          <strong>{selected} →</strong>
-          {Array.from({ length: 10 }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setRank(i)}
-              style={{ marginLeft: 4 }}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      )}
-
+      </div>
+      <div className={styles.actions}>
+        <Button onClick={handleRank} style={{ marginTop: 24 }}>
+          Save Ranking
+        </Button>
+      </div>
       <hr style={{ margin: "24px 0" }} />
 
-      <ul>
-        {remaining.map((c) => (
-          <li
-            key={c.id}
-            style={{ cursor: "pointer", marginBottom: 4 }}
-            onClick={() => setSelected(c.id)}
-          >
-            {c.country}
-          </li>
+      <div className={styles.contestants}>
+        <h2>My losers</h2>
+        {sortContestants(remaining).map((c) => (
+          <div key={c.id} onClick={() => c && setSelected(c)}>
+            <ContestantCard contestant={c}></ContestantCard>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <button
-        onClick={async () => {
-          const res = await fetch(`/api/rank`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contest_id: contestId,
-              ranking: top10.filter(Boolean),
-            }),
-          });
-
-          const data = await res.json();
-          if (!res.ok) alert(data.error || "Error saving");
-          else alert("Top 10 saved");
-        }}
-        style={{ marginTop: 24 }}
-      >
-        Save Ranking
-      </button>
+      {selected && (
+        <div className={styles.rankModal}>
+          <div className={styles.rankModalContent}>
+            <ContestantCard contestant={selected}></ContestantCard>
+            <div className={styles.rankModalActions}>
+              {Array.from({ length: 10 }, (_, i) => (
+                <button
+                  className={styles.rankBtn}
+                  key={i}
+                  onClick={() => setRank(i)}
+                >
+                  <RankNumber rank={i + 1} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

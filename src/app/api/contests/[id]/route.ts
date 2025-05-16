@@ -33,7 +33,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Missing contest ID" }, { status: 400 });
   }
 
-  const allowedFields = ["host", "description", "banner_url"];
+  const allowedFields = ["host", "description", "banner_url", "active"];
   const updateData: Record<string, string> = {};
 
   for (const key of allowedFields) {

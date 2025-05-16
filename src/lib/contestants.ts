@@ -1,6 +1,6 @@
 import { Contestant } from "@/app/api/contestants/types";
 import { Contest } from "@/app/api/contests/types";
-import { AUTO_FINALISTS } from "./countries";
+import { AUTO_FINALISTS, getCountryName } from "./countries";
 
 // filter out contestants that are not in the final in_final=false and include the auto finalists and host
 export function finalContestants(
@@ -18,5 +18,11 @@ export function finalContestants(
 }
 
 export function sortContestants(contestants?: Contestant[]): Contestant[] {
-  return contestants?.slice().sort((a, b) => a.country.localeCompare(b.country)) || [];
+  return (
+    contestants
+      ?.slice()
+      .sort((a, b) =>
+        getCountryName(a.country).localeCompare(getCountryName(b.country))
+      ) || []
+  );
 }

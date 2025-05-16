@@ -1,0 +1,27 @@
+.dropzone {
+  background: #fff;
+  border: 1px dashed #ccc;
+  border-radius: 6px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+  box-sizing: border-box;
+}
+
+.dragging {
+  background-color: #f0f0f0;
+}
+
+.preview {
+  width: 100%;
+  max-width: 100%;
+  max-height: 200px;
+  display: block;
+  margin: 0 auto;
+}
+
+.hiddenInput {
+  display: none;
+}

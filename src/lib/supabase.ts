@@ -10,7 +10,6 @@ export async function uploadToBucket(
   filePath: string,
   file: File
 ): Promise<{ url: string | null; error: string | null }> {
-  const expiresInSeconds = 60 * 60 * 24; // default 24h
   const { error: uploadError } = await supabase.storage
     .from(bucket)
     .upload(filePath, file, {
@@ -22,18 +21,19 @@ export async function uploadToBucket(
     return { url: null, error: uploadError.message };
   }
 
-  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+  const { data } = supabase.storage
     .from(bucket)
-    .createSignedUrl(filePath, expiresInSeconds);
+    .getPublicUrl(filePath);
 
-  if (signedUrlError || !signedUrlData?.signedUrl) {
-    return {
-      url: null,
-      error: signedUrlError?.message || "Failed to get signed URL",
-    };
-  }
 
-  return { url: signedUrlData.signedUrl, error: null };
+    if (!data?.publicUrl) {
+      return {
+        url: null,
+        error: 'Failed to get public URL',
+      };
+    }
+  
+    return { url: data.publicUrl, error: null };
 }
 
 

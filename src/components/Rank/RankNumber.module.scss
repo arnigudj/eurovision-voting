@@ -1,0 +1,19 @@
+@use "@/app/variables" as *;
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    background-color: $surface-color;
+    border-radius: $border-radius;
+    border: 1px solid $border-color;
+    box-shadow: $shadow;
+    
+    strong {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $gray-dark;
+    }
+}

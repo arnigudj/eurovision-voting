@@ -1,0 +1,43 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
+
+.contests {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.contest {
+  display: flex;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 1rem;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.contestLink {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    gap: 0.5rem;    
+    width: 100%;
+    padding: 1rem;
+}
+
+.contestLink:hover {
+    background: #f0f0f0;
+}
+
+.contestEditBtn {
+    background: #fff;
+}
+
+.contestActive {
+    border-color: #316DF4
+}

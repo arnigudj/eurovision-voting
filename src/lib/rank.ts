@@ -1,3 +1,5 @@
+import { Contestant } from "@/app/api/contestants/types";
+
 /**
  * Assigns a selected country to a position in the top 10 ranking.
  * Shifts existing countries down the list starting from the target index.
@@ -9,20 +11,20 @@
  */
 export function assignRank(
   top10: (string | null)[],
-  selected: string | null,
+  selected: Contestant,
   targetIndex: number
 ): (string | null)[] {
   if (!selected) return top10;
 
   // Remove the selected country from its current position if it’s already in top10
-  const oldIndex = top10.findIndex((id) => id === selected);
+  const oldIndex = top10.findIndex((id) => id === selected.id);
   const updated = [...top10];
   if (oldIndex !== -1) {
     updated[oldIndex] = null;
   }
 
   const out = [...updated];
-  let moving: string | null = selected;
+  let moving: string | null = selected.id;
 
   // Shift existing entries down from the target index
   for (let i = targetIndex; i < 10; i++) {

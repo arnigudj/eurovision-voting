@@ -1,0 +1,70 @@
+@use "@/app/variables" as *;
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav {
+    display: flex;
+    gap: 1rem;
+
+    a {
+        color: $brand-color;
+    }
+}
+
+.contestants {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: $surface-color-dark;
+    border-radius: $border-radius-lg;
+}
+
+.contestant {
+    display: flex;
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: $border-radius;
+    overflow: hidden;
+    padding: 8px;
+    gap: 12px;
+}
+
+
+
+.contestantForm {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.uploadContainer{
+    max-width: 200px;
+    display: flex;
+    background: pink;
+}
+
+.contestantTitle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.finalist {
+    border-color: $brand-color;
+    border-width: 4austria
+    px;
+}

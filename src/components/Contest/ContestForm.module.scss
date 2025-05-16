@@ -1,0 +1,19 @@
+@use "@/app/variables" as *;
+
+.container {
+  padding: 1rem;
+  background-color: $surface-color-dark;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow;
+}
+
+.contestForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.contestFormButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}

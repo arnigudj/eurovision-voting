@@ -1,0 +1,70 @@
+@use "@/app/variables" as *;
+
+.container {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: $surface-color-dark;
+  border-radius: $border-radius-lg;
+  position: relative;
+  align-items: center;
+  box-shadow: $shadow;
+}
+.imageContainer {
+  width: 100px;
+  min-width: 100px;
+  height: 100px;
+  overflow: hidden;
+  background: $surface-color;
+  border-radius: 8px;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+$flag-position: 80px;
+
+.flagContainer {
+  width: 50px;
+  height: 50px;
+  overflow: hidden;
+  background: $surface-color-dark;
+  position: absolute;
+  top: $flag-position;
+  left: $flag-position;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.infoContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.country {
+    display: block;
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: $gray-dark;
+    line-height: 2rem;
+}
+
+.performer {
+    display: block;
+    font-weight: 700;
+    font-size: 1rem;
+    color: $gray-dark;
+}
+
+.song {
+    display: block;
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: $gray-dark;
+}
