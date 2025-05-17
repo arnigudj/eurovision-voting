@@ -2,6 +2,7 @@
 
 import { ContestProvider } from "@/context/ContestContext";
 import { GroupProvider } from "@/context/GroupContext";
+import { Suspense } from "react";
 
 export default function UserLayout({
   children,
@@ -11,7 +12,9 @@ export default function UserLayout({
   return (
     <div>
       <ContestProvider>
-        <GroupProvider>{children}</GroupProvider>
+        <GroupProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+        </GroupProvider>
       </ContestProvider>
     </div>
   );
