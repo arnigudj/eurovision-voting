@@ -44,7 +44,9 @@ export default function LeaderboardsPage() {
           fetch(`/api/rank`),
         ]);
 
-      setLeaderboard(await leaderboardRes.json());
+      if(leaderboardRes.ok) {
+        setLeaderboard(await leaderboardRes.json());
+      }
       const contestantsData: Contestant[] = await contestantsRes.json();
 
       const group10Data: GroupVoteResult[] = await group10Res.json();
@@ -95,7 +97,7 @@ export default function LeaderboardsPage() {
       <div className={styles.container}>
         <h2>Leaders</h2>
         <div className={styles.row}>
-          {leaderboard.map((e) => {
+          {leaderboard?.map((e) => {
             return (
               <div key={`leaderboard-entry-${e.user_id}-${selected}`}>
                 <LeaderboardEntryCard entry={e} />
