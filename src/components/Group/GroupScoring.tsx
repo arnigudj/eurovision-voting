@@ -29,10 +29,12 @@ export default function GroupScoring({ group, userId }: Props) {
 
   const load = useCallback(async () => {
     const leaderBoardRes = await fetch(`/api/groups/${group.id}/leaderboard`);
+    if(!leaderBoardRes.ok) return;
+
     const lb: LeaderboardEntry[] = await leaderBoardRes.json();
     setLeaderboard(lb);
     // get current place
-    const entry = lb.find((u) => userId === u.user_id);
+    const entry = lb?.find((u) => userId === u.user_id);
     setUser(entry);
   }, [group.id, userId]);
 

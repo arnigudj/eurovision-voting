@@ -10,6 +10,7 @@ import styles from "./page.module.scss";
 import GroupScoring from "@/components/Group/GroupScoring";
 import { useUserGroup } from "@/context/UserGroupContext";
 import { useContest } from "@/context/ContestContext";
+import Callout from "@/components/Callout/Callout";
 
 export default function VotingPage({
   params,
@@ -100,9 +101,11 @@ export default function VotingPage({
 
   if (isLoading) return;
 
+  const numTop10Rank = top10Rank?.filter((t) => !!t).length || [];
+
   return (
     <div>
-      {contest?.votes_locked && (
+      {contest?.votes_locked && numTop10Rank === 10 && (
         <div className={styles.scoring}>
           {joined?.map((j) => {
             return (
@@ -115,6 +118,9 @@ export default function VotingPage({
           })}
         </div>
       )}
+      {contest?.votes_locked && numTop10Rank !== 10 && (
+        <Callout>Waiting for first results. Voting has been locked.</Callout>
+      )}
 
       <div className={styles.panel}>
         <ContestantRanking
@@ -125,7 +131,7 @@ export default function VotingPage({
           ranking={top10}
           onRank={handleRanking}
         />
-        {contest?.votes_locked && (
+        {contest?.votes_locked && numTop10Rank === 10 && (
           <ContestantRanking
             safeOnRank
             label="Current top 10"
