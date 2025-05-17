@@ -94,7 +94,7 @@ export default function VotingPage({
     return;
   }
 
-  if (userGroups.length <= 0) {
+  if (userGroups.length <= 0 && joined.length <= 0) {
     return <GroupSelection />;
   }
 

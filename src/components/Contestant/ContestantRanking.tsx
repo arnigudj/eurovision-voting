@@ -62,21 +62,24 @@ export default function ContestantRanking({
   return (
     <div className={styles.container}>
       <div className={styles.contestants}>
+        <h2>{label}</h2>
         {placesLeft > 0 && !votesLocked && (
           <Callout>You got {placesLeft} remaining</Callout>
         )}
-        <h2>{label}</h2>
-        {top10Contestants.map((c, i) => (
-          <div
-            className={styles.cardContainer}
-            key={i}
-            onClick={() => c && setSelected(c)}
-          >
-            <ContestantCard contestant={c}>
-              <RankNumber rank={i + 1} />
-            </ContestantCard>
-          </div>
-        ))}
+        {top10Contestants.map((c, i) => {
+          if(!c) return;
+          return (
+            <div
+              className={styles.cardContainer}
+              key={i}
+              onClick={() => c && setSelected(c)}
+            >
+              <ContestantCard contestant={c}>
+                <RankNumber rank={i + 1} />
+              </ContestantCard>
+            </div>
+          );
+        })}
       </div>
       {!safeOnRank && (
         <div className={styles.actions}>
@@ -95,7 +98,7 @@ export default function ContestantRanking({
       {!votesLocked && (
         <>
           <div className={styles.contestants}>
-            <h2>My losers</h2>
+            <h2>Pick your top 10</h2>
             {sortContestants(remaining).map((c) => (
               <div
                 className={styles.cardContainer}
