@@ -86,31 +86,33 @@ export async function GET(
   // 6. Compute scores
   const numUsers = usersData.length;
   const users = usersData as unknown as UserWithMeta[];
-  const leaderboard: LeaderboardEntry[] = users.map((u) => {
-    const ranking = voteMap.get(u.user_id) || [];
+  const leaderboard: LeaderboardEntry[] = users
+    .map((u) => {
+      const ranking = voteMap.get(u.user_id) || [];
+      if (ranking.length === 0) return null;
+      let score = 0;
 
-    let score = 0;
+      for (const votedId of ranking) {
+        const officialIndex = rankData.ranking.indexOf(votedId);
 
-    for (const votedId of ranking) {
-      const officialIndex = rankData.ranking.indexOf(votedId);
+        if (officialIndex === -1) continue;
 
-      if (officialIndex === -1) continue;
+        if (officialIndex === 0) score += 5;
+        else if (officialIndex <= 2) score += 3;
+        else if (officialIndex <= 4) score += 2;
+        else if (officialIndex <= 9) score += 1;
+      }
 
-      if (officialIndex === 0) score += 5;
-      else if (officialIndex <= 2) score += 3;
-      else if (officialIndex <= 4) score += 2;
-      else if (officialIndex <= 9) score += 1;
-    }
-
-    return {
-      user_id: u.user_id,
-      nickname: u.users.nickname,
-      image_url: u.users.image_url,
-      ranking: ranking.map((id) => idToCountry.get(id) || id),
-      score,
-      place: numUsers,
-    };
-  });
+      return {
+        user_id: u.user_id,
+        nickname: u.users.nickname,
+        image_url: u.users.image_url,
+        ranking: ranking.map((id) => idToCountry.get(id) || id),
+        score,
+        place: numUsers,
+      };
+    })
+    .filter((entry): entry is LeaderboardEntry => entry !== null);
 
   // 7. Sort by score descending, then nickname
   leaderboard.sort((a, b) => {

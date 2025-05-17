@@ -34,7 +34,7 @@ export default function LeaderboardEntryCard({ entry }: Props) {
             ))}
           </div>
         </div>
-        <Score label="Score" value={entry!.score} />
+        <Score label="Points" value={entry!.score} />
         <Score label="Place" value={entry!.place} />
       </div>
     </div>
