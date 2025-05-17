@@ -83,7 +83,7 @@ export default function LeaderboardsPage() {
 
     const interval = setInterval(() => {
       load(selected);
-    }, 300000); // 5 minutes
+    }, 60000); // 5 minutes
 
     return () => clearInterval(interval);
   }, [selected, load]);
