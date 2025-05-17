@@ -1,29 +1,26 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
-import { Contest } from "../../../api/contests/types";
 import { Contestant } from "../../../api/contestants/types";
-import ContestHeader from "@/components/Contest/ContestHeader";
-import UserAvatar from "@/components/User/UserAvatar";
 import { sortContestants } from "@/lib/contestants";
 import ContestantRanking from "@/components/Contestant/ContestantRanking";
 import { useUser } from "@/context/UserContext";
-import Link from "next/link";
-import { Group } from "@/app/api/groups/types";
-import { UserGroup } from "@/app/api/users/[id]/groups/types";
 import GroupSelection from "@/components/Group/GroupSelection";
 import styles from "./page.module.scss";
 import GroupScoring from "@/components/Group/GroupScoring";
+import { useUserGroup } from "@/context/UserGroupContext";
+import { useContest } from "@/context/ContestContext";
 
 export default function VotingPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { joined, userGroups, isLoading: isUserGroupLoading } = useUserGroup();
+
   const { id: userId } = use(params);
   const { user } = useUser();
-  const [contest, setContest] = useState<Contest>();
-  const [joined, setJoined] = useState<Group[]>([]);
+  const { contest } = useContest();
   const [contestants, setContestants] = useState<Contestant[]>([]);
   const [top10, setTop10] = useState<(string | null)[]>(Array(10).fill(null));
   const [top10Rank, setTop10Rank] = useState<(string | null)[]>(
@@ -35,27 +32,10 @@ export default function VotingPage({
   const triggerRefresh = () => setRefreshKey((k) => k + 1);
 
   const load = useCallback(async () => {
-    const [contestRes, contestantsRes, voteRes, groupsRes, joinedRes] =
-      await Promise.all([
-        fetch(`/api/contests/active`),
-        fetch(`/api/contestants/active`),
-        fetch(`/api/votes?user_id=${userId}`),
-        fetch(`/api/groups`),
-        fetch(`/api/users/${userId}/groups`),
-      ]);
-    const contestData: Contest = await contestRes.json();
-    setContest(contestData);
-    if (contestData.votes_locked) {
-      const rankRes = await fetch(`/api/rank`);
-      const rankData = await rankRes.json();
-
-      if (Array.isArray(rankData.ranking)) {
-        const filledRank = Array(10)
-          .fill(null)
-          .map((_, i) => rankData.ranking[i] || null);
-        setTop10Rank(filledRank);
-      }
-    }
+    const [contestantsRes, voteRes] = await Promise.all([
+      fetch(`/api/contestants/active`),
+      fetch(`/api/votes?user_id=${userId}`),
+    ]);
 
     setContestants(sortContestants(await contestantsRes.json()));
 
@@ -66,20 +46,31 @@ export default function VotingPage({
         .map((_, i) => vote[i] || null);
       setTop10(filled);
     }
-    const groups: Group[] = await groupsRes.json();
-    const userGroups: UserGroup[] = await joinedRes.json();
 
-    const myGroups = groups.filter((g) =>
-      userGroups.find((j) => j.group_id === g.id)
-    );
-
-    setJoined(myGroups);
     setIsLoading(false);
   }, [userId]);
+
+  const loadRank = useCallback(async () => {
+    const rankRes = await fetch(`/api/rank`);
+    const rankData = await rankRes.json();
+
+    if (Array.isArray(rankData.ranking)) {
+      const filledRank = Array(10)
+        .fill(null)
+        .map((_, i) => rankData.ranking[i] || null);
+      setTop10Rank(filledRank);
+    }
+  }, []);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (contest?.votes_locked) {
+      loadRank();
+    }
+  }, [loadRank, contest?.votes_locked]);
 
   const handleRanking = async (ranking: (string | null)[]) => {
     const res = await fetch(`/api/votes`, {
@@ -99,28 +90,28 @@ export default function VotingPage({
     }
   };
 
+  if (isUserGroupLoading) {
+    return;
+  }
+
+  if (userGroups.length <= 0) {
+    return <GroupSelection />;
+  }
+
   if (isLoading) return;
 
   return (
     <div>
-      <ContestHeader contest={contest}>
-        <Link href={`/users/${user?.id}`}>
-          <UserAvatar user={user} />
-        </Link>
-      </ContestHeader>
-
-      {joined.length <= 0 && (
-        <GroupSelection
-          onJoin={(g) => {
-            setJoined([g]);
-          }}
-        />
-      )}
-
       {contest?.votes_locked && (
         <div className={styles.scoring}>
           {joined?.map((j) => {
-            return <GroupScoring key={`leaderboard-${j.id}`}  group={j} userId={user!.id} />;
+            return (
+              <GroupScoring
+                key={`leaderboard-${j.id}`}
+                group={j}
+                userId={user!.id}
+              />
+            );
           })}
         </div>
       )}
@@ -134,14 +125,16 @@ export default function VotingPage({
           ranking={top10}
           onRank={handleRanking}
         />
-        <ContestantRanking
-          safeOnRank
-          label="Current top 10"
-          votesLocked
-          refreshKey={refreshKey}
-          contestants={contestants}
-          ranking={top10Rank}
-        />
+        {contest?.votes_locked && (
+          <ContestantRanking
+            safeOnRank
+            label="Current top 10"
+            votesLocked
+            refreshKey={refreshKey}
+            contestants={contestants}
+            ranking={top10Rank}
+          />
+        )}
       </div>
     </div>
   );

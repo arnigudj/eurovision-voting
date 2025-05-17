@@ -1,37 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
-import { UserGroup } from "@/app/api/users/[id]/groups/types";
 import ButtonCard from "../Button/ButtonCard";
 import styles from "./GroupSelection.module.scss";
-import { Group } from "@/app/api/groups/types";
 import Callout from "../Callout/Callout";
+import { useGroup } from "@/context/GroupContext";
+import { useUserGroup } from "@/context/UserGroupContext";
+import { Group } from "@/app/api/groups/types";
 
-interface Props {
-    onJoin?: (group:Group) => void;
-}
-
-export default function GroupSelection({onJoin}: Props) {
+export default function GroupSelection({}) {
   const { user } = useUser();
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [joined, setJoined] = useState<UserGroup[]>([]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const load = async () => {
-      const [groupsRes, joinedRes] = await Promise.all([
-        fetch(`/api/groups`),
-        fetch(`/api/users/${user.id}/groups`),
-      ]);
-
-      setGroups(await groupsRes.json());
-      setJoined(await joinedRes.json());
-    };
-
-    load();
-  }, [user]);
+  const { groups } = useGroup();
+  const { joined, setJoined } = useUserGroup();
 
   const toggleGroup = async (groupId: string, isInGroup: boolean) => {
     const method = isInGroup ? "DELETE" : "POST";
@@ -49,49 +29,41 @@ export default function GroupSelection({onJoin}: Props) {
       return;
     }
 
-    const data = await res.json();
-
-    setJoined((prev) => {
-      let newSet;
-      if (isInGroup) newSet = prev.filter((i) => i.group_id !== groupId);
-      else newSet = [...prev, data];
-      return newSet;
-    });
-
-    if(onJoin && !isInGroup) onJoin(data);
+    let newSet: Group[] = [];
+    if (isInGroup) newSet = joined.filter((i) => i.id !== groupId);
+    else {
+      const newGroup = groups.find((g) => g.id === groupId);
+      if (newGroup) {
+        newSet = [...joined, newGroup];
+      }
+    }
+    setJoined(newSet);
   };
 
   if (!user) return null;
   // my groups
-  const myGroups = groups.filter((g) =>
-    joined.find((j) => j.group_id === g.id)
-  );
-  const otherGroups = groups.filter(
-    (g) => !joined.find((j) => j.group_id === g.id)
-  );
+
+  const otherGroups = groups.filter((g) => !joined.find((j) => j.id === g.id));
 
   return (
     <div className={styles.container}>
       <h2>Your parties</h2>
       <div className={styles.groups}>
-        {myGroups.length === 0 && (
+        {joined.length === 0 && (
           <Callout>
             You are not in any party. <br />
             <strong>Join one to start voting you party pooper!</strong>
           </Callout>
         )}
-        {myGroups.map((group) => {
-          const isInGroup = !!joined.find((j) => j.group_id === group.id);
+        {joined.map((group) => {
           return (
             <ButtonCard
               key={group.id}
-              onClick={() => toggleGroup(group.id, isInGroup)}
-              className={`${styles.groupCard} ${
-                isInGroup ? styles.inGroup : ""
-              }`}
+              onClick={() => toggleGroup(group.id, true)}
+              className={`${styles.groupCard} ${styles.inGroup}`}
             >
               <strong>{group.name}</strong>
-              <span>{isInGroup ? "Leave" : "Join"}</span>
+              <span>Leave</span>
             </ButtonCard>
           );
         })}
@@ -99,17 +71,14 @@ export default function GroupSelection({onJoin}: Props) {
       <div className={styles.groups}>
         <h6>Join a party</h6>
         {otherGroups.map((group) => {
-          const isInGroup = !!joined.find((j) => j.group_id === group.id);
           return (
             <ButtonCard
               key={group.id}
-              onClick={() => toggleGroup(group.id, isInGroup)}
-              className={`${styles.groupCard} ${
-                isInGroup ? styles.inGroup : ""
-              }`}
+              onClick={() => toggleGroup(group.id, false)}
+              className={`${styles.groupCard}`}
             >
               <strong>{group.name}</strong>
-              <span>{isInGroup ? "Leave" : "Join"}</span>
+              <span>Join</span>
             </ButtonCard>
           );
         })}

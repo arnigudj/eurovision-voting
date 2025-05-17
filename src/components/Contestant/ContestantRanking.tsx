@@ -26,7 +26,7 @@ export default function ContestantRanking({
   refreshKey,
   safeOnRank,
   votesLocked,
-  label = 'My top 10',
+  label = "My top 10",
 }: Props) {
   const [selected, setSelected] = useState<Contestant>();
   const [top10, setTop10] = useState<(string | null)[]>(Array(10).fill(null));
@@ -60,14 +60,18 @@ export default function ContestantRanking({
 
   const remaining = contestants?.filter((c) => !top10.includes(c.id));
   return (
-    <div>
+    <div className={styles.container}>
       <div className={styles.contestants}>
         {placesLeft > 0 && !votesLocked && (
           <Callout>You got {placesLeft} remaining</Callout>
         )}
         <h2>{label}</h2>
         {top10Contestants.map((c, i) => (
-          <div key={i} onClick={() => c && setSelected(c)}>
+          <div
+            className={styles.cardContainer}
+            key={i}
+            onClick={() => c && setSelected(c)}
+          >
             <ContestantCard contestant={c}>
               <RankNumber rank={i + 1} />
             </ContestantCard>
@@ -93,7 +97,11 @@ export default function ContestantRanking({
           <div className={styles.contestants}>
             <h2>My losers</h2>
             {sortContestants(remaining).map((c) => (
-              <div key={c.id} onClick={() => c && setSelected(c)}>
+              <div
+                className={styles.cardContainer}
+                key={c.id}
+                onClick={() => c && setSelected(c)}
+              >
                 <ContestantCard contestant={c}></ContestantCard>
               </div>
             ))}

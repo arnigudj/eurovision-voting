@@ -2,16 +2,14 @@
 
 import Button from "@/components/Button/Button";
 import GroupSelection from "@/components/Group/GroupSelection";
-import UserAvatar from "@/components/User/UserAvatar";
 import { useUser } from "@/context/UserContext";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import styles from "./page.module.scss";
 
 export default function ProfilePage() {
-  const {user} = useUser();
-    const router = useRouter();
+  const { user } = useUser();
+  const router = useRouter();
   const { logout } = useUser();
 
   useEffect(() => {
@@ -21,21 +19,27 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      <UserAvatar user={user} />
-      <Link href={`/users/${user?.id}/voting`}>Back to Voting</Link>
-      
-      
       <GroupSelection />
 
       <Button
+        color="danger"
         onClick={() => {
-          const confirmed = confirm(`Are you sure you want to delete this account and start fresh?`);
+          const confirmed = confirm(
+            `Are you sure you want to delete this account and start fresh?`
+          );
           if (!confirmed) return;
           logout();
           router.push("/");
         }}
       >
         Delete Account
+      </Button>
+      <Button
+        onClick={() => {
+          router.push(`/users/${user?.id}/voting`);
+        }}
+      >
+        Back to voting
       </Button>
     </div>
   );

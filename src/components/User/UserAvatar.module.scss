@@ -8,6 +8,8 @@
   padding-right: 16px;
   border-radius: 100px;
   gap: 8px;
+  border: 1px solid $border-color;
+  box-shadow: $shadow-sm;
 }
 
 .avatar {

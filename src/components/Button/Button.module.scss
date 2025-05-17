@@ -4,8 +4,54 @@
   all: unset;
   cursor: pointer;
   padding: 0.5rem 1rem;
-  background-color: $surface-color-dark;
+  font-weight: 600;
   border-radius: $border-radius-lg;
-  color: $gray-dark;
-  font-weight: 700;
+  transition: background-color 0.2s ease, color 0.2s ease, border 0.2s ease;
+  text-align: center;
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+/* Variants */
+.contained {
+  background-color: $surface-color-dark;
+  color: white;
+
+  &.brand    { background-color: $brand-color; }
+  &.success  { background-color: $success-color; }
+  &.danger    { background-color: $danger-color; }
+  &.secondary { background-color: $gray; }
+
+  &:hover:not(.disabled) {
+    filter: brightness(0.9);
+  }
+}
+
+.outlined {
+  background: transparent;
+  border: 2px solid currentColor;
+
+  &.brand    { color: $brand-color; border-color: $brand-color; }
+  &.success  { color: $success-color; border-color: $success-color; }
+  &.danger    { color: $danger-color; border-color: $danger-color; }
+  &.secondary { color: $gray-dark; border-color: $gray-dark; }
+
+  &:hover:not(.disabled) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.text {
+  background: transparent;
+
+  &.brand    { color: $brand-color; }
+  &.success  { color: $success-color; }
+  &.danger    { color: $danger-color; }
+  &.secondary { color: $gray-dark; }
+
+  &:hover:not(.disabled) {
+    text-decoration: underline;
+  }
 }

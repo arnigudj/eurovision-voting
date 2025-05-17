@@ -60,12 +60,14 @@ export default function GroupScoring({ group, userId }: Props) {
           setShowLeaderboard((prev) => !prev);
         }}
       >
-        <h6>{`${group.name}`}</h6>
-        <div>
-          <Score label={`Place`} value={formatOrdinal(user.place)} />
-          <Score label={`Score`} value={user.score} />
+        <div className={styles.card}>
+          <h6 className={styles.cardTitle}>{`${group.name}`}</h6>
+          <div className={styles.cardNumbers}>
+            <Score label={`Place`} value={formatOrdinal(user.place)} />
+            <Score label={`Score`} value={user.score} />
+          </div>
+          <small className={styles.cardLeaderboard}>see leaderboard</small>
         </div>
-        <small>see leaderboard</small>
       </ButtonCard>
       {showLeaderboard && (
         <div className={styles.modal}>

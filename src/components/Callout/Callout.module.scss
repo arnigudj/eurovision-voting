@@ -1,0 +1,25 @@
+@use "@/app/variables" as *;
+
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background-color: rgba($brand-color, 0.1);
+  padding: 1rem;
+  border-radius: $border-radius-lg;
+  color: $brand-color;
+  font-size: 0.95rem;
+}
+
+.icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 20px;
+  height: 20px;
+}
+
+.content {
+  strong {
+    font-weight: 600;
+  }
+}

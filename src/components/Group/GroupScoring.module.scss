@@ -63,3 +63,23 @@
   background-color: transparent;
   border-radius: 4px;
 }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: $surface-color-dark;
+  padding: 0.5rem;
+  border-radius: $border-radius-sm;
+  border: 1px solid $border-color;
+  box-shadow: $shadow-sm;
+}
+
+.cardNumbers {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.cardLeaderboard {
+  color: $brand-color;
+}

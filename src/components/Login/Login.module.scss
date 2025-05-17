@@ -1,0 +1,41 @@
+@use "@/app/variables" as *;
+
+.container {
+  background: $surface-color-dark;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bannerContainer {
+  display: flex;
+  align-items: center;
+  max-height: 150px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    object-fit: "cover";
+    overflow: hidden;
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: $white;
+  border-radius: $border-radius-lg;
+  min-width: 300px;
+  padding: 2rem;
+  box-shadow: $shadow;
+  gap: 1rem;
+}
+
+.uploader {
+  display: flex;
+  max-width: 300px;
+  max-height: 300px;
+}

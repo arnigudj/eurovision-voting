@@ -6,6 +6,9 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
+    box-shadow: $shadow-lg;
+    border-bottom: 1px solid $border-color;
+    background: $white;
 }
 
 .title {
