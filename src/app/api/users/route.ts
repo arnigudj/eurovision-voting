@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const path = `${nickname}-${Date.now()}/${file.name}`;
+  const path = `${Date.now()}/${file.name}`;
   const { url: image_url, error: uploadError } = await uploadToBucket(
     "userss",
     path,
